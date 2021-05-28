@@ -2,6 +2,7 @@
 
 We considere two populations with the assumptions:
 
+![](Assumptions.PNG)
 
 We compare mean vectors from two populations when:
 
@@ -10,4 +11,4 @@ We compare mean vectors from two populations when:
 
 We construct a power study that estimates the power and type-I error of the approximate test when the assumptions are not met.
 
-You can find the shiny apps in the visualization files where you can control for the mean vector, the distribution and for the covariance matrix.
+The visualization files uses shiny apps to show the power for different mean vectors, distributions and covariance matrices.
