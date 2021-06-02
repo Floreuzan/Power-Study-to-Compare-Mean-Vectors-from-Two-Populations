@@ -1,0 +1,294 @@
+---
+title: "Power Study to  Compare Mean Vectors from Two Populations"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, message = FALSE, echo=FALSE}
+source("library.R")
+```
+
+<p>&nbsp;</p>
+
+In order to compare mean vectors of two independent populations, we make the following assumptions:
+
+(1) $X_{1,1}, ..., X_{1,n_{1}}$ is a random sample of size $n_{1}$ from a p-variate population with mean vector $\mu_{1}$ and covariance matrix $\Sigma_{1}$.
+
+
+(2) $X_{2,1}, ..., X_{2,n_{2}}$ is a random sample of size $n_{2}$ from a p-variate population with mean vector $\mu_{2}$ and covariance matrix $\Sigma_{2}$.
+
+(3) $\{ X_{1,1}, ..., X_{1,n_{1}} \}$ is independent of the other  $\{ X_{2,1}, ..., X_{2,n_{2}} \}$.
+
+
+<p>&nbsp;</p>
+
+
+We want to test for the equality of the mean vectors from two populations:
+
+
+$H_{0}: \mu_{1} = \mu_{2}$ vs. $H_{a}: \mu_{1} \neq \mu_{2}$
+
+
+<p>&nbsp;</p>
+
+
+If we add two more assumptions:
+
+(4) $X_{1,1}, ..., X_{1,n_{1}}$ $\sim$  MN($\mu_{1}$, $\Sigma_{1}$) and $X_{2,1}, ..., X_{2,n_{2}}$ $\sim$ MN($\mu_{2}$, $\Sigma_{2}$)
+
+(5) $\Sigma_{1}$ = $\Sigma_{2}$
+
+
+Then, the likelihood ratio test of $H_{0}$ is based on the square of the statistical distance, $T^{2}$, and is given by:
+
+$T^{2} = (\bar{X_{1}} - \bar{X_{2}} - (\mu_{1} - \mu_{2}))'(\frac{1}{n_{1}} + \frac{1}{n_{2}}) S_{pooled}^{-1} (\bar{X_{1}} - \bar{X_{2}} - (\mu_{1} - \mu_{2}))$
+
+where:
+
+* $T^{2}$ is distributed as $\frac{(n_{1} + n_{2} - 2)p}{n_{1} + n_{2} - p - 1} F_{p, n_{1} + n_{2} - p - 1}(\alpha)$
+
+* $S_{pooled} = \frac{\sum_{j=1}^{n_{1}} (X_{1j} - \bar{X_1})(X_{1j} - \bar{X_1})' + \sum_{j=1}^{n_{1}} (X_{2j} - \bar{X_2})(X_{2j} - \bar{X_2})'}{n_{1} + n_{2} - 2} = \frac{n_{1} -1}{n_{1} + n_{2} - 2}S_{1} + \frac{n_{2} -1}{n_{1} + n_{2} - 2}S_{2}$
+
+* the critical distance $c^{2}$ is determined from the distribution of the two-sample $T^{2}$ statistic so that $P(T^{2} < c^{2} = \frac{(n_{1} + n_{2} - 2)p}{n_{1} + n_{2} - p - 1} F_{p, n_{1} + n_{2} - p - 1}(\alpha) ) = 1- \alpha$.
+
+
+<p>&nbsp;</p>
+
+
+Therefore, we reject $H_{0}$ if: $T^{2} > c^{2}$. We conclude that all $\mu_{1} - \mu_{2}$ within squared statistical distance $c^{2}$ of $\bar{x_{1}} - \bar{x_{2}}$ constitute the confidence region. 
+ 
+ 
+<p>&nbsp;</p>
+
+
+When the assumptions (4) and/or (5) is/are not met, for large samples, this structure is sufficient for making inferences about the p × 1 vector $H_{0}$: $\mu_{1} = \mu_{2}$. The approximate test that allow us to test the hypotheses $H_{0}: \mu_{1} = \mu_{2}$ vs $H_{a}: \mu_{1} \neq \mu_{2}$ is:
+
+
+$T^{2} = (\bar{X_{1}} - \bar{X_{2}} - (\mu_{1} - \mu_{2}))'(\frac{1}{n_{1}}S_{1} + \frac{1}{n_{2}}S_{2})  (\bar{X_{1}} - \bar{X_{2}} - (\mu_{1} - \mu_{2}) \sim \chi^{2}_{p}$.
+
+
+We reject $H_{0}$ at level $\alpha$ if $T^{2} > \chi^{2}_{p, \alpha}$.
+
+<p>&nbsp;</p>
+
+
+We construct a power study that estimates the power and type-I error of the approximate test when assumptions 4 and 5 are not met.
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+# 1) Testing when Assumption (4) is not met
+
+
+```{r,  message = FALSE, echo=FALSE}
+power_table_1 <-get(load("data/power_table_1.Rdata"))
+
+#POWER TABLE
+Power_1 <-power_table_1 %>%
+        mutate(n = factor(n)) %>%
+        pivot_longer(c("reject_mv_mv", "reject_sn_sn","reject_st_st", "reject_mv_sn", "reject_mv_st", "reject_sn_st"), names_to = "test", values_to = "reject") %>%
+        group_by(mu, test, n) %>%
+        summarize(power = mean(reject))
+```
+
+We test $H_{0}: \mu_{1} = \mu_{2} =  \mu_{0} = \begin{pmatrix} 0 \\ 0 \\0 \end{pmatrix}$ when: 
+
+* (4) $X_{1,1}, ..., X_{1,n_{1}}$ $\sim$  MN($\mu_{1}$, $\Sigma_{1}$) and $X_{2,1}, ..., X_{2,n_{2}}$ $\sim$ MN($\mu_{2}$, $\Sigma_{2}$) is not met.
+
+<p>&nbsp;</p>
+
+In order to equality of the mean, we vary the third component of $\mu_{0}$ between -2 and 2 i.e we test for $\mu_{0}= \begin{pmatrix} 0 \\ 0 \\0 \end{pmatrix} = \begin{pmatrix} 0 \\ 0 \\ \mu_{3} \end{pmatrix}$ with $\mu_{3}$ varying between -2 and 2 at an interval of 0.2.
+
+<p>&nbsp;</p>
+
+We compare the Mean Vectors from Two Populations with different distributions:
+
+1) normal distribution vs normal distribution
+
+2) skew-normal distribution vs skew-normal distribution
+
+3) skew-t distribution vs skew-t distribution
+
+4) normal distribution vs skew-normal distribution
+
+5) normal distribution vs skew-t distribution
+
+5) skew-normal distribution vs skew-t distribution
+
+
+<p>&nbsp;</p>
+
+Remarks:
+
+When n grows, the power performs better on the three tests (normal vs normal, normal vs skew-normal and normal vs skew-t). We can see that around 0, the power shrinks as the sample size n is bigger.
+
+
+```{r, message = FALSE, echo=FALSE}
+arrange(Power_1, n) %>% filter(mu ==0)
+```
+
+
+However, for n = 10, the estimated type-I error is very high ranging between  with .035 and 0.065 for a significance level $\alpha$ = 0.01. This result makes sense because the test follows approximately a $\chi^2$-distribution only when the two samples sizes are large. We can also see that the mean of the power for n = 100 is equal to 0.0108 which is higher than the  significance level $\alpha$. Therefore, a large sample in this case should be at least bigger than 10 in order to be accurate.
+
+```{r, message = FALSE, echo=FALSE}
+arrange(Power_1, n) %>% filter(mu ==0) %>%
+  group_by(n) %>%
+  summarize(mean_power = mean(power))
+```
+
+
+When comparing the power of the different distributions, we can see that the power is higher when comparing two multivariate normal distributions. We can also see that the test performs better on the skew-normal compared to the skew-t because the skew-normal is more similar to the normal distribution (compared to the skew-t distribution). When comparing the type-I error of he different distributions, we can see that the 6 different tests are similar with an error approximately equal to 0.02 (or a little bit higher than the significance level $\alpha$ = 0.01).
+
+```{r, message = FALSE, echo=FALSE}
+arrange(Power_1, n) %>% filter(mu ==0) %>%
+  group_by(test) %>%
+  summarize(mean_power = mean(power))
+```
+
+<p>&nbsp;</p>
+
+# 2) Testing when Assumption (5) is not met 
+
+```{r,  message = FALSE, echo=FALSE}
+power_table_2<-get(load("data/power_table_2.Rdata"))
+
+#POWER TABLE
+Power_2 <-power_table_2 %>%
+  mutate(n = factor(n)) %>%
+  group_by(mu, sigma, n) %>%
+  summarize(power = mean(reject))
+```
+
+We test $H_{0}: \mu_{1} = \mu_{2} =  \mu_{0} = \begin{pmatrix} 0 \\ 0 \\0 \end{pmatrix}$ when:
+
+* (5) $\Sigma_{1}$ = $\Sigma_{2}$ is not met.
+
+<p>&nbsp;</p>
+
+In order to equality of the mean, we vary the third component of $\mu_{0}$ between -2 and 2 i.e we test for $\mu_{0}= \begin{pmatrix} 0 \\ 0 \\0 \end{pmatrix} = \begin{pmatrix} 0 \\ 0 \\ \mu_{3} \end{pmatrix}$ with $\mu_{3}$ varying between -2 and 2 at an interval of 0.2.
+
+<p>&nbsp;</p>
+
+
+We compare the Mean Vectors from two normal populations with different covariance matrix.
+
+In order to test for the covariance matrices of the two normally distributed populations, we test for $\Sigma_{1} = \Sigma_{2} = \Sigma_{0} = \begin{pmatrix} 1 & 0.5 & 0.5 \\ 0.5 & 1 & 0.5 \\0.5 & 0.5 & 1 \end{pmatrix}$. 
+
+We control the distribution of the second covariance matrix by multiplying it with an integers between 1 and 10. Therefore, we can choose k such that $\Sigma_{2} = k\Sigma_{1} = k\Sigma_{0}$. For k = 1, the two covariance matrices are equal. When k gets bigger, we have larger violation of assumption 5.
+
+<p>&nbsp;</p>
+
+Remarks: 
+
+When n grows, the power performs better on the six tests. We can see that around 0, the power shrinks around  as the sample size n is bigger.
+
+```{r, message = FALSE, echo=FALSE}
+arrange(Power_2, n) %>% filter(mu ==0)
+```
+
+
+However, for n = 10, the estimated type-I error is very high ranging between  with  0.045 and 0.1 for a significance level $\alpha$ = 0.01. This result makes sense because the test follows approximately a $\chi^2$-distribution only when the two samples sizes are large. We can also see that the mean of the power for n = 100 or n = 1000 is maintained approximately around 0.01.Therefore, a large sample in this case should be at least bigger than 10 in order to be accurate.
+
+```{r, message = FALSE, echo=FALSE}
+arrange(Power_2, n) %>% filter(mu ==0) %>%
+  group_by(n) %>%
+  summarize(mean_power = mean(power))
+```
+
+
+When comparing the power of the test for the two population means, we can see that as k gets bigger, the power around the mean 0 grows. I.e., when the integer multiplying $\Sigma_{0}$ is closer to 1, the power around the mean 0 shrinks. When the integer multiplying $\Sigma_{0}$ is closer to 10, the power around the mean 0 grows. We can conclude that for smaller violation of assumption 5, the power is higher when $\mu_{2} \neq  \mu_{0} = \begin{pmatrix} 0 \\ 0 \\0 \end{pmatrix}$. For larger violation of assumption 5, the power is lower when $\mu_{2} \neq  \mu_{0} = \begin{pmatrix} 0 \\ 0 \\0 \end{pmatrix}$. When comparing the type-I error of the test for the two population means, we can see that the error is approximately equal to 0.03 (or higher than the significance level $\alpha$ = 0.01). 
+
+```{r, message = FALSE, echo=FALSE}
+arrange(Power_2, n) %>% filter(mu ==0) %>%
+  group_by(sigma) %>%
+  summarize(mean_power = mean(power))
+```
+
+
+<p>&nbsp;</p>
+
+# 3)  Testing when Assumption (4) and Assumption (5) are not met
+
+
+```{r,  message = FALSE, echo=FALSE}
+power_table_3<-get(load("data/power_table_3.Rdata"))
+
+#POWER TABLE
+Power_3 <-power_table_3 %>%
+        mutate(n = factor(n)) %>%
+        pivot_longer(c("reject_mv_mv", "reject_mv_sn", "reject_mv_st", "reject_sn_st"), names_to = "test", values_to = "reject") %>%
+        group_by(mu, sigma, test, n) %>%
+        summarize(power = mean(reject))
+```
+
+
+We test $H_{0}: \mu_{1} = \mu_{2} =  \mu_{0} = \begin{pmatrix} 0 \\ 0 \\0 \end{pmatrix}$ when:
+
+* (4) $X_{1,1}, ..., X_{1,n_{1}}$ $\sim$  MN($\mu_{1}$, $\Sigma_{1}$) and $X_{2,1}, ..., X_{2,n_{2}}$ $\sim$ MN($\mu_{2}$, $\Sigma_{2}$) is not met.
+
+ * (5) $\Sigma_{1}$ = $\Sigma_{2}$ is not met.
+
+<p>&nbsp;</p>
+
+In order to equality of the mean, we vary the third component of $\mu_{0}$ between -2 and 2 i.e we test for $\mu_{0}= \begin{pmatrix} 0 \\ 0 \\0 \end{pmatrix} = \begin{pmatrix} 0 \\ 0 \\ \mu_{3} \end{pmatrix}$ with $\mu_{3}$ varying between -2 and 2 at an interval of 0.2.
+
+<p>&nbsp;</p>
+
+We compare the Mean Vectors from two topulations with different distributions and with different covariance matrices.
+
+The couples of distributions are:
+
+1) normal distribution vs normal distribution
+
+2) normal distribution vs skew-normal distribution
+
+3) normal distribution vs skew-t distribution
+
+(We do not test for all the combinations as the function would take too long to run).
+
+<p>&nbsp;</p>
+
+We control the distribution of the second covariance matrix by multiplying it with an integers between 1 and 10. Therefore, we can choose k such that $\Sigma_{2} = k\Sigma_{1} = k\Sigma_{0}$. For k = 1, the two covariance matrices are equal. When k gets bigger, we have larger violation of assumption 5.
+
+<p>&nbsp;</p>
+
+Remarks:
+
+We observe the same remarks that given previously:
+
+When n grows, the power performs better on the 4 different tests of the mean comparison for any covariance matrix. We can see that around 0, the power shrinks as the sample size n is bigger.
+
+
+```{r, message = FALSE, echo=FALSE}
+arrange(Power_3, n) %>% filter(mu ==0)
+```
+
+However, for n = 10, the estimated type-I error is very high with an average of 0.060375 for a significance level $\alpha$ = 0.01. This result makes sense because the test follows approximately a $\chi^2$-distribution only when the two samples sizes are large. We can also see that the mean of the power for n = 100 or n = 1000 is maintained approximately around 0.01.Therefore, a large sample in this case should be at least bigger than 10 in order to be accurate.
+
+```{r, message = FALSE, echo=FALSE}
+arrange(Power_3, n) %>% filter(mu ==0) %>%
+  group_by(n) %>%
+  summarize(mean_power = mean(power))
+```
+
+
+When comparing the power of the different distributions, we can see that the power is higher when comparing two multivariate normal distributions. We can also see that the test performs better on the skew-normal compared to the skew-t because the skew-normal is more similar to the normal distribution (compared to the skew-t distribution). When comparing the type-I error of he different distributions, we can see that the 4 different tests are similar with an error approximately equal to 0.028 (or higher than the significance level $\alpha$ = 0.01).
+
+```{r, message = FALSE, echo=FALSE}
+arrange(Power_3, n) %>% filter(mu ==0) %>%
+  group_by(test) %>%
+  summarize(mean_power = mean(power))
+```
+
+When comparing the power of the test for the two population means, we can see that as k gets bigger, the power around the mean 0 grows. I.e., when the integer multiplying $\Sigma_{0}$ is closer to 1, the power around the mean 0 shrinks. When the integer multiplying $\Sigma_{0}$ is closer to 10, the power around the mean 0 grows. We can conclude that for smaller violation of assumption 5, the power is higher when $\mu_{2} \neq  \mu_{0} = \begin{pmatrix} 0 \\ 0 \\0 \end{pmatrix}$. For larger violation of assumption 5, the power is lower when $\mu_{2} \neq  \mu_{0} = \begin{pmatrix} 0 \\ 0 \\0 \end{pmatrix}$. When comparing the type-I error of the test for the two population means, we can see that the error is approximately equal to 0.03 (or higher than the significance level $\alpha$ = 0.01). 
+
+
+```{r, message = FALSE, echo=FALSE}
+arrange(Power_3, n) %>% filter(mu ==0) %>%
+  group_by(sigma) %>%
+  summarize(mean_power = mean(power))
+```
